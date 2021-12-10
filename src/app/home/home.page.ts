@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { LoadingController } from '@ionic/angular';
+import { WordpressService } from '../wordpress.service';
 
 @Component({
   selector: 'app-home',
@@ -7,10 +8,33 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  posts
+  posts: {
+    ID: number;
+    title: string;
+    content: string;
+    date: string;
+  }[] = [];
 
   constructor(
-    public http: HttpClient,
+    public wordpress: WordpressService,
+    public loadingConttoller: LoadingController,
   ) {}
+
+  async ionViewDidEnter() {
+    const loading = await this.loadingConttoller.create({
+      message: 'Loading...'
+    });
+    if (!this.posts.length) {
+      await loading.present();
+    }
+    this.wordpress.getPosts().subscribe(data => {
+      this.posts = data['posts'];
+      loading.dismiss();
+    });
+  }
+
+  trackByFn(index, item): number {
+    return item.ID;
+  }
 
 }
